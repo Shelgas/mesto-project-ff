@@ -1,11 +1,11 @@
 import "./pages/index.css";
 import { initialCards } from "./components/initialCards";
 import { openModal, closeModal } from "./components/modal";
-import { createCard, deleteCard } from "./components/cards";
+import { createCard, deleteCard, handleButtonLike } from "./components/cards";
 
 const placesList = document.querySelector(".places__list");
 
-const popup = document.querySelector(".popup");
+const popups = document.querySelectorAll(".popup");
 const popupEdit = document.querySelector(".popup_type_edit");
 const popupCard = document.querySelector(".popup_type_new-card");
 
@@ -23,6 +23,10 @@ const profileInputDesc = profileEditForm.elements.description;
 const cardForm = document.forms["new-place"];
 const cardInputName = cardForm.elements["place-name"];
 const cardInputLink = cardForm.elements.link;
+
+const imagePopup = document.querySelector(".popup_type_image");
+const imageLink = imagePopup.querySelector(".popup__image");
+const imageDesc = imagePopup.querySelector(".popup__caption");
 
 profileEditBtn.addEventListener("click", (evt) => {
   profileInputName.value = profileName.textContent;
@@ -52,7 +56,9 @@ function handleCardFormSubmit(evt) {
   };
   loadImage(cardInputLink.value)
     .then((evt) => {
-      placesList.prepend(createCard(newCard, deleteCard));
+      placesList.prepend(
+        createCard(newCard, deleteCard, handleButtonLike, handleImgPopup)
+      );
     })
     .catch(() => {
       console.error("Всё идёт не по плану.");
@@ -61,9 +67,21 @@ function handleCardFormSubmit(evt) {
   closeModal(popupCard);
 }
 
+function handleImgPopup(evt) {
+  imageLink.src = evt.target.src;
+  imageDesc.textContent = evt.target.alt;
+  imageLink.alt = imageDesc.textContent;
+  openModal(imagePopup);
+}
+
 const renderCards = (cards) => {
   cards.forEach((item) => {
-    const cardElement = createCard(item, deleteCard);
+    const cardElement = createCard(
+      item,
+      deleteCard,
+      handleButtonLike,
+      handleImgPopup
+    );
     placesList.append(cardElement);
   });
 };
@@ -76,5 +94,7 @@ function loadImage(imageUrl) {
     image.onload = resolve;
   });
 }
+
+Array.from(popups).forEach((popup) => popup.classList.add("popup_is-animated"));
 
 renderCards(initialCards);
