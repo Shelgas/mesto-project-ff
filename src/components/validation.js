@@ -87,3 +87,17 @@ export const enableValidation = (validationConfig) => {
     setEventListeners(formElement, validationConfig);
   });
 };
+
+export const clearValidation = (formElement, validationConfig) => {
+  const inputList = Array.from(
+    formElement.querySelectorAll(validationConfig.inputSelector)
+  );
+  const buttonElement = formElement.querySelector(
+    validationConfig.submitButtonSelector
+  );
+  inputList.forEach((inputElement) => {
+    hideInputError(formElement, inputElement, validationConfig);
+    inputElement.setCustomValidity("");
+  });
+  buttonElement.classList.add(validationConfig.inactiveButtonClass);
+};

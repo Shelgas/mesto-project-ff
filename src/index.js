@@ -2,7 +2,7 @@ import "./pages/index.css";
 import { initialCards } from "./components/initialCards";
 import { openModal, closeModal } from "./components/modal";
 import { createCard, deleteCard, handleButtonLike } from "./components/cards";
-import { enableValidation, validationConfig } from "./components/validation";
+import { enableValidation, validationConfig, clearValidation } from "./components/validation";
 
 const placesList = document.querySelector(".places__list");
 
@@ -30,11 +30,13 @@ const imageLink = imagePopup.querySelector(".popup__image");
 const imageDesc = imagePopup.querySelector(".popup__caption");
 
 profileEditBtn.addEventListener("click", (evt) => {
+  clearValidation(profileEditForm, validationConfig);
   profileInputName.value = profileName.textContent;
   profileInputDesc.value = profileDescription.textContent;
   openModal(popupEdit);
 });
-cardAddBtn.addEventListener("click", () => openModal(popupCard));
+
+cardAddBtn.addEventListener("click", handleClickAddCard);
 profileEditForm.addEventListener("submit", handleEditFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
 
@@ -48,6 +50,13 @@ function handleEditFormSubmit(evt) {
   profileDescription.textContent = profileInputDesc.value;
   closeModal(popupEdit);
 }
+
+function handleClickAddCard() {
+  clearValidation(cardForm, validationConfig);
+  console.log(1);
+  cardForm.reset();
+  openModal(popupCard)
+} 
 
 function handleCardFormSubmit(evt) {
   evt.preventDefault();
