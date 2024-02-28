@@ -2,6 +2,7 @@ import "./pages/index.css";
 import { initialCards } from "./components/initialCards";
 import { openModal, closeModal } from "./components/modal";
 import { createCard, deleteCard, handleButtonLike } from "./components/cards";
+import { enableValidation, validationConfig } from "./components/validation";
 
 const placesList = document.querySelector(".places__list");
 
@@ -98,3 +99,6 @@ function loadImage(imageUrl) {
 Array.from(popups).forEach((popup) => popup.classList.add("popup_is-animated"));
 
 renderCards(initialCards);
+profileInputName.value = profileName.textContent;
+profileInputDesc.value = profileDescription.textContent;
+enableValidation(validationConfig);
