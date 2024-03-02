@@ -14,7 +14,7 @@ const handleResponse = (response) => {
   if (response.ok) {
     return response.json();
   }
-  return Promise.reject(`Ошибка: `);
+  return Promise.reject(`Ошибка: ${(response.status, response.statusText)}`);
 };
 
 export const getAutorInformation = () => {
@@ -91,12 +91,27 @@ export const dislikeCard = (cardId) => {
   }).then(handleResponse);
 };
 
-export const editAvatar = (link) => {
-  return fetch(`${config.baseUrl}/users/me/avatar`, {
-    method: "PATCH",
-    headers: config.headers,
-    body: JSON.stringify({
-      avatar: link,
-    }),
-  }).then(handleResponse);
+export const editAvatar = async (link) => {
+  const isTypeValid = await checkLink(link, 'image'); 
+  if (isTypeValid) {
+    return fetch(`${config.baseUrl}/users/me/avatar`, {
+      method: "PATCH",
+      headers: config.headers,
+      body: JSON.stringify({
+        avatar: link,
+      }),
+    }).then(handleResponse);
+  } else {
+    return Promise.reject(`Не является изображением`);
+  }
 };
+
+
+function checkLink(link, type) {
+  return fetch(`${link}`, { method: "HEAD" }).then((response) => {
+    if (response.headers.get("content-type").includes(type)) {
+      return true;
+    }
+    return false;
+  });
+}
