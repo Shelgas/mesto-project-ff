@@ -81,7 +81,7 @@ function handleEditFormSubmit(evt) {
   evt.preventDefault();
   updateProfile(profileInputName.value, profileInputDesc.value).then((data) => {
     profileName.textContent = data.name;
-    profileInputDesc.textContent = data.about;
+    profileDescription.textContent = data.about;
   }).catch(err => console.log(err))
   .finally(bootProcess(profileEditForm, false));
   closeModal(popupEdit);
