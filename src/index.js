@@ -1,8 +1,20 @@
 import "./pages/index.css";
-import { initialCards } from "./components/initialCards";
+import {
+  getAutorInformation,
+  getCards,
+  updateProfile,
+  addNewCard,
+  deleteCard,
+  likeCard,
+  dislikeCard,
+} from "./components/api";
 import { openModal, closeModal } from "./components/modal";
-import { createCard, deleteCard, handleButtonLike } from "./components/cards";
-import { enableValidation, validationConfig, clearValidation } from "./components/validation";
+import { createCard } from "./components/cards";
+import {
+  enableValidation,
+  validationConfig,
+  clearValidation,
+} from "./components/validation";
 
 const placesList = document.querySelector(".places__list");
 
@@ -20,6 +32,7 @@ const profileDescription = document.querySelector(".profile__description");
 const profileEditForm = document.forms["edit-profile"];
 const profileInputName = profileEditForm.elements.name;
 const profileInputDesc = profileEditForm.elements.description;
+const profileAvatar = document.querySelector(".profile__image");
 
 const cardForm = document.forms["new-place"];
 const cardInputName = cardForm.elements["place-name"];
@@ -29,13 +42,12 @@ const imagePopup = document.querySelector(".popup_type_image");
 const imageLink = imagePopup.querySelector(".popup__image");
 const imageDesc = imagePopup.querySelector(".popup__caption");
 
-profileEditBtn.addEventListener("click", (evt) => {
-  clearValidation(profileEditForm, validationConfig);
-  profileInputName.value = profileName.textContent;
-  profileInputDesc.value = profileDescription.textContent;
-  openModal(popupEdit);
-});
+let autor = {
+  name: profileName.textContent,
+  description: profileDescription.textContent,
+};
 
+profileEditBtn.addEventListener("click", handleClickEdit);
 cardAddBtn.addEventListener("click", handleClickAddCard);
 profileEditForm.addEventListener("submit", handleEditFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
@@ -44,19 +56,27 @@ Array.from(closeBtns).forEach((btn) =>
   btn.addEventListener("click", () => closeModal(btn.closest(".popup")))
 );
 
+function handleClickEdit() {
+  clearValidation(profileEditForm, validationConfig);
+  profileInputName.value = profileName.textContent;
+  profileInputDesc.value = profileDescription.textContent;
+  openModal(popupEdit);
+}
+
 function handleEditFormSubmit(evt) {
   evt.preventDefault();
-  profileName.textContent = profileInputName.value;
-  profileDescription.textContent = profileInputDesc.value;
-  closeModal(popupEdit);
+  updateProfile(profileInputName.value, profileInputDesc.value).then((data) => {
+    profileName.textContent = data.name;
+    profileInputDesc.textContent = data.about;
+    closeModal(popupEdit);
+  });
 }
 
 function handleClickAddCard() {
   clearValidation(cardForm, validationConfig);
-  console.log(1);
   cardForm.reset();
-  openModal(popupCard)
-} 
+  openModal(popupCard);
+}
 
 function handleCardFormSubmit(evt) {
   evt.preventDefault();
@@ -64,10 +84,16 @@ function handleCardFormSubmit(evt) {
     name: cardInputName.value,
     link: cardInputLink.value,
   };
-  loadImage(cardInputLink.value)
-    .then((evt) => {
+  addNewCard(newCard)
+    .then((data) => {
       placesList.prepend(
-        createCard(newCard, deleteCard, handleButtonLike, handleImgPopup)
+        createCard(
+          data,
+          handleDeleteCard,
+          handleLikeCard,
+          handleImgPopup,
+          autor.id
+        )
       );
     })
     .catch(() => {
@@ -84,13 +110,36 @@ function handleImgPopup(evt) {
   openModal(imagePopup);
 }
 
+function handleLikeCard(evt, cardId, likeCount) {
+  evt.preventDefault();
+  if (evt.target.classList.contains("card__like-button_is-active")) {
+    dislikeCard(cardId).then((res) => {
+      evt.target.classList.remove("card__like-button_is-active");
+      likeCount.textContent = res.likes.length;
+    });
+  } else {
+    likeCard(cardId).then((res) => {
+      evt.target.classList.add("card__like-button_is-active");
+      likeCount.textContent = res.likes.length;
+    });
+  }
+}
+
+function handleDeleteCard(evt, cardId) {
+  evt.preventDefault();
+  deleteCard(cardId);
+  const item = evt.target.closest(".card");
+  item.remove();
+}
+
 const renderCards = (cards) => {
   cards.forEach((item) => {
     const cardElement = createCard(
       item,
-      deleteCard,
-      handleButtonLike,
-      handleImgPopup
+      handleDeleteCard,
+      handleLikeCard,
+      handleImgPopup,
+      autor.id
     );
     placesList.append(cardElement);
   });
@@ -107,7 +156,15 @@ function loadImage(imageUrl) {
 
 Array.from(popups).forEach((popup) => popup.classList.add("popup_is-animated"));
 
-renderCards(initialCards);
-profileInputName.value = profileName.textContent;
-profileInputDesc.value = profileDescription.textContent;
 enableValidation(validationConfig);
+
+Promise.all([getAutorInformation(), getCards()]).then(
+  ([autorData, cardsData]) => {
+    profileName.textContent = autor.name = autorData.name;
+    profileDescription.textContent = autor.description = autorData.about;
+    autor.id = autorData._id;
+    profileAvatar.style.backgroundImage =
+      autor.avatar = `url(${autorData.avatar})`;
+    renderCards(cardsData);
+  }
+);
