@@ -1,7 +1,5 @@
 # Проектная работа Mesto
-
 Ссылка на репозиторий: https://github.com/Shelgas/mesto-project-ff.git
-<br>
 Ссылка на сайт: https://shelgas.github.io/mesto-project-ff/
 
 ## Описание
