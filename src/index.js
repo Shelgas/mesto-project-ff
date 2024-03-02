@@ -5,17 +5,16 @@ import {
   updateProfile,
   addNewCard,
   deleteCard,
-  likeCard,
-  dislikeCard,
   editAvatar,
 } from "./components/api";
 import { openModal, closeModal } from "./components/modal";
-import { createCard } from "./components/cards";
+import { createCard } from "./components/card";
 import {
   enableValidation,
   validationConfig,
   clearValidation,
 } from "./components/validation";
+import { bootProcess } from "./components/utils";
 
 const placesList = document.querySelector(".places__list");
 
@@ -50,12 +49,12 @@ const imageDesc = imagePopup.querySelector(".popup__caption");
 
 const deleteForm = document.forms["delete-avatar"];
 
-let autor = {
+const autor = {
   name: profileName.textContent,
   description: profileDescription.textContent,
 };
 
-let chosenCard = { };
+let chosenCard = {};
 
 profileEditBtn.addEventListener("click", handleClickEdit);
 cardAddBtn.addEventListener("click", handleClickAddCard);
@@ -79,12 +78,16 @@ function handleClickEdit() {
 function handleEditFormSubmit(evt) {
   bootProcess(profileEditForm, true);
   evt.preventDefault();
-  updateProfile(profileInputName.value, profileInputDesc.value).then((data) => {
-    profileName.textContent = data.name;
-    profileDescription.textContent = data.about;
-  }).catch(err => console.log(err))
-  .finally(bootProcess(profileEditForm, false));
-  closeModal(popupEdit);
+  updateProfile(profileInputName.value, profileInputDesc.value)
+    .then((data) => {
+      profileName.textContent = data.name;
+      profileDescription.textContent = data.about;
+    })
+    .then(() => {
+      bootProcess(profileEditForm, false);
+      closeModal(popupEdit);
+    })
+    .catch((err) => console.log(err));
 }
 
 function handleNewAvatar(evt) {
@@ -94,9 +97,13 @@ function handleNewAvatar(evt) {
     .then((data) => {
       profileAvatar.style.backgroundImage = `url(${data.avatar})`;
     })
-    .catch((err) => console.log(err))
-    .finally(bootProcess(avatarForm, false));
-  evt.target.reset();
+    .then(() => {
+      bootProcess(avatarForm, false);
+      closeModal(popupAvatar);
+      evt.target.reset();
+    })
+    .catch((err) => console.log(err));
+
   closeModal(popupAvatar);
 }
 
@@ -125,16 +132,17 @@ function handleCardFormSubmit(evt) {
         createCard(
           data,
           handleDeleteCardQuestion,
-          handleLikeCard,
           handleImgPopup,
           autor.id
         )
       );
     })
-    .catch((err) => console.log(err))
-    .finally(bootProcess(cardForm, false));
-  evt.target.reset();
-  closeModal(popupCard);
+    .then(() => {
+      bootProcess(cardForm, false);
+      closeModal(popupCard);
+      evt.target.reset();
+    })
+    .catch((err) => console.log(err));
 }
 
 function handleImgPopup(evt) {
@@ -144,35 +152,25 @@ function handleImgPopup(evt) {
   openModal(imagePopup);
 }
 
-function handleLikeCard(evt, cardId, likeCount) {
-  evt.preventDefault();
-  if (evt.target.classList.contains("card__like-button_is-active")) {
-    dislikeCard(cardId).then((res) => {
-      evt.target.classList.remove("card__like-button_is-active");
-      likeCount.textContent = res.likes.length;
-    });
-  } else {
-    likeCard(cardId).then((res) => {
-      evt.target.classList.add("card__like-button_is-active");
-      likeCount.textContent = res.likes.length;
-    });
-  }
-}
+
 
 function handleDeleteCardQuestion(evt, cardId, cardElement) {
   evt.preventDefault();
   openModal(popupCardDelete);
   chosenCard = {
     id: cardId,
-    item : cardElement
+    item: cardElement,
   };
 }
 
 function handleDeleteCard(evt) {
   evt.preventDefault();
-  deleteCard(chosenCard.id);
-  chosenCard.item.remove();
-  closeModal(popupCardDelete);
+  deleteCard(chosenCard.id)
+    .then(() => {
+      chosenCard.item.remove();
+      closeModal(popupCardDelete);
+    })
+    .catch((err) => console.log(err));
 }
 
 function renderCards(cards) {
@@ -180,7 +178,6 @@ function renderCards(cards) {
     const cardElement = createCard(
       item,
       handleDeleteCardQuestion,
-      handleLikeCard,
       handleImgPopup,
       autor.id
     );
@@ -188,24 +185,17 @@ function renderCards(cards) {
   });
 }
 
-function bootProcess(form, isBooting) {
-  const btn = form.querySelector(".popup__button");
-  btn.textContent = isBooting
-    ? (btn.textContent = "Сохранение...")
-    : (btn.textContent = "Сохранить");
-}
-
 Array.from(popups).forEach((popup) => popup.classList.add("popup_is-animated"));
 
 enableValidation(validationConfig);
 
-Promise.all([getAutorInformation(), getCards()]).then(
-  ([autorData, cardsData]) => {
+Promise.all([getAutorInformation(), getCards()])
+  .then(([autorData, cardsData]) => {
     profileName.textContent = autor.name = autorData.name;
     profileDescription.textContent = autor.description = autorData.about;
     autor.id = autorData._id;
     profileAvatar.style.backgroundImage =
       autor.avatar = `url(${autorData.avatar})`;
     renderCards(cardsData);
-  }
-);
+  })
+  .catch((err) => console.log(err));

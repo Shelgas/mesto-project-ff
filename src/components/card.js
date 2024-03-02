@@ -1,13 +1,14 @@
+import { likeCard, dislikeCard } from "./api";
+
 const cardTemplate = document.querySelector("#card-template").content;
 
 export const createCard = (
   item,
   handleDeleteCardQuestion,
-  handleLikeCard,
   handleImgPopup,
   autorID
 ) => {
-  const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
+  const cardElement = getCardTemplate();
   const cardTitle = cardElement.querySelector(".card__title");
   const cardImage = cardElement.querySelector(".card__image");
   const deleteButton = cardElement.querySelector(".card__delete-button");
@@ -42,4 +43,27 @@ export const createCard = (
 
 function likeCheck(card, id) {
   return card.likes.some((item) => item._id === id);
+}
+
+function getCardTemplate() {
+  return cardTemplate.querySelector(".card").cloneNode(true);
+}
+
+function handleLikeCard(evt, cardId, likeCount) {
+  evt.preventDefault();
+  if (evt.target.classList.contains("card__like-button_is-active")) {
+    dislikeCard(cardId)
+      .then((res) => {
+        evt.target.classList.remove("card__like-button_is-active");
+        likeCount.textContent = res.likes.length;
+      })
+      .catch((err) => console.log(err));
+  } else {
+    likeCard(cardId)
+      .then((res) => {
+        evt.target.classList.add("card__like-button_is-active");
+        likeCount.textContent = res.likes.length;
+      })
+      .catch((err) => console.log(err));
+  }
 }
