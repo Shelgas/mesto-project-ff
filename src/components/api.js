@@ -18,28 +18,21 @@ const handleResponse = (response) => {
 };
 
 export const getAutorInformation = () => {
-  return fetch(`${address}/users/me`, {
-    headers: {
-      authorization: token,
-    },
+  return fetch(`${config.baseUrl}/users/me`, {
+    headers: config.headers,
   }).then(handleResponse);
 };
 
 export const getCards = () => {
-  return fetch(`${address}/cards`, {
-    headers: {
-      authorization: token,
-    },
+  return fetch(`${config.baseUrl}/cards`, {
+    headers: config.headers,
   }).then(handleResponse);
 };
 
 export const updateProfile = (name, about) => {
-  return fetch(`${address}/users/me`, {
+  return fetch(`${config.baseUrl}/users/me`, {
     method: "PATCH",
-    headers: {
-      authorization: token,
-      "Content-Type": "application/json",
-    },
+    headers: config.headers,
     body: JSON.stringify({
       name: name,
       about: about,
@@ -48,12 +41,9 @@ export const updateProfile = (name, about) => {
 };
 
 export const addNewCard = (newCard) => {
-  return fetch(`${address}/cards`, {
+  return fetch(`${config.baseUrl}/cards`, {
     method: "POST",
-    headers: {
-      authorization: token,
-      "Content-Type": "application/json",
-    },
+    headers: config.headers,
     body: JSON.stringify({
       name: newCard.name,
       link: newCard.link,
@@ -62,37 +52,28 @@ export const addNewCard = (newCard) => {
 };
 
 export const deleteCard = (cardId) => {
-  return fetch(`${address}/cards/${cardId}`, {
+  return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: "DELETE",
-    headers: {
-      authorization: token,
-      "Content-Type": "application/json",
-    },
+    headers: config.headers,
   }).then(handleResponse);
 };
 
 export const likeCard = (cardId) => {
-  return fetch(`${address}/cards/likes/${cardId}`, {
+  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "PUT",
-    headers: {
-      authorization: token,
-      "Content-Type": "application/json",
-    },
+    headers: config.headers,
   }).then(handleResponse);
 };
 
 export const dislikeCard = (cardId) => {
-  return fetch(`${address}/cards/likes/${cardId}`, {
+  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "DELETE",
-    headers: {
-      authorization: token,
-      "Content-Type": "application/json",
-    },
+    headers: config.headers,
   }).then(handleResponse);
 };
 
 export const editAvatar = async (link) => {
-  const isTypeValid = await checkLink(link, 'image'); 
+  const isTypeValid = await checkLink(link, "image");
   if (isTypeValid) {
     return fetch(`${config.baseUrl}/users/me/avatar`, {
       method: "PATCH",
@@ -105,7 +86,6 @@ export const editAvatar = async (link) => {
     return Promise.reject(`Не является изображением`);
   }
 };
-
 
 function checkLink(link, type) {
   return fetch(`${link}`, { method: "HEAD" }).then((response) => {
