@@ -23,13 +23,16 @@
 
 * Flexbox
 * Grid Layout
-* Методология БЭМ
-* БЭМ Nested
 * Git
 * JavaScript
 * Адаптивная верстка
 * Псевдоклассы CSS
 * Модульный подход
 * Webpack
-* Асинхронность
-* Запросы на сервер
+
+## Языки:
+
+- HTML
+- CSS
+- JavaScript
+
