@@ -2,7 +2,7 @@ const cardTemplate = document.querySelector("#card-template").content;
 
 export const createCard = (
   item,
-  handleDeleteCard,
+  handleDeleteCardQuestion,
   handleLikeCard,
   handleImgPopup,
   autorID
@@ -31,13 +31,14 @@ export const createCard = (
 
   cardImage.addEventListener("click", (evt) => handleImgPopup(evt));
   deleteButton.addEventListener("click", (evt) =>
-    handleDeleteCard(evt, cardId)
+    handleDeleteCardQuestion(evt, cardId, cardElement)
   );
   likeButton.addEventListener("click", (evt) =>
     handleLikeCard(evt, cardId, cardLikeCount)
   );
   return cardElement;
 };
+ 
 
 function likeCheck(card, id) {
   return card.likes.some((item) => item._id === id);

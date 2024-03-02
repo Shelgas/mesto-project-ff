@@ -23,6 +23,7 @@ const popups = document.querySelectorAll(".popup");
 const popupEdit = document.querySelector(".popup_type_edit");
 const popupCard = document.querySelector(".popup_type_new-card");
 const popupAvatar = document.querySelector(".popup_type_avatar");
+const popupCardDelete = document.querySelector(".popup_type_delete");
 
 const cardAddBtn = document.querySelector(".profile__add-button");
 const profileEditBtn = document.querySelector(".profile__edit-button");
@@ -42,16 +43,19 @@ const cardInputLink = cardForm.elements.link;
 const profileAvatar = document.querySelector(".profile__image");
 const avatarForm = document.forms["new-avatar"];
 const avatarInputLink = avatarForm.elements.link;
-const avatarBtnSubmit = avatarForm.elements.link;
 
 const imagePopup = document.querySelector(".popup_type_image");
 const imageLink = imagePopup.querySelector(".popup__image");
 const imageDesc = imagePopup.querySelector(".popup__caption");
 
+const deleteForm = document.forms["delete-avatar"];
+
 let autor = {
   name: profileName.textContent,
   description: profileDescription.textContent,
 };
+
+let chosenCard = { };
 
 profileEditBtn.addEventListener("click", handleClickEdit);
 cardAddBtn.addEventListener("click", handleClickAddCard);
@@ -59,6 +63,7 @@ profileAvatar.addEventListener("click", handleChangeAvatar);
 profileEditForm.addEventListener("submit", handleEditFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
 avatarForm.addEventListener("submit", handleNewAvatar);
+deleteForm.addEventListener("submit", handleDeleteCard);
 
 Array.from(closeBtns).forEach((btn) =>
   btn.addEventListener("click", () => closeModal(btn.closest(".popup")))
@@ -119,7 +124,7 @@ function handleCardFormSubmit(evt) {
       placesList.prepend(
         createCard(
           data,
-          handleDeleteCard,
+          handleDeleteCardQuestion,
           handleLikeCard,
           handleImgPopup,
           autor.id
@@ -154,18 +159,27 @@ function handleLikeCard(evt, cardId, likeCount) {
   }
 }
 
-function handleDeleteCard(evt, cardId) {
+function handleDeleteCardQuestion(evt, cardId, cardElement) {
   evt.preventDefault();
-  deleteCard(cardId);
-  const item = evt.target.closest(".card");
-  item.remove();
+  openModal(popupCardDelete);
+  chosenCard = {
+    id: cardId,
+    item : cardElement
+  };
+}
+
+function handleDeleteCard(evt) {
+  evt.preventDefault();
+  deleteCard(chosenCard.id);
+  chosenCard.item.remove();
+  closeModal(popupCardDelete);
 }
 
 function renderCards(cards) {
   cards.forEach((item) => {
     const cardElement = createCard(
       item,
-      handleDeleteCard,
+      handleDeleteCardQuestion,
       handleLikeCard,
       handleImgPopup,
       autor.id
