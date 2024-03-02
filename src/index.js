@@ -7,6 +7,7 @@ import {
   deleteCard,
   likeCard,
   dislikeCard,
+  editAvatar
 } from "./components/api";
 import { openModal, closeModal } from "./components/modal";
 import { createCard } from "./components/cards";
@@ -21,6 +22,7 @@ const placesList = document.querySelector(".places__list");
 const popups = document.querySelectorAll(".popup");
 const popupEdit = document.querySelector(".popup_type_edit");
 const popupCard = document.querySelector(".popup_type_new-card");
+const popupAvatar = document.querySelector(".popup_type_avatar")
 
 const cardAddBtn = document.querySelector(".profile__add-button");
 const profileEditBtn = document.querySelector(".profile__edit-button");
@@ -32,11 +34,14 @@ const profileDescription = document.querySelector(".profile__description");
 const profileEditForm = document.forms["edit-profile"];
 const profileInputName = profileEditForm.elements.name;
 const profileInputDesc = profileEditForm.elements.description;
-const profileAvatar = document.querySelector(".profile__image");
 
 const cardForm = document.forms["new-place"];
 const cardInputName = cardForm.elements["place-name"];
 const cardInputLink = cardForm.elements.link;
+
+const profileAvatar = document.querySelector(".profile__image");
+const avatarForm = document.forms["new-avatar"];
+const avatarInputLink = avatarForm.elements.link;
 
 const imagePopup = document.querySelector(".popup_type_image");
 const imageLink = imagePopup.querySelector(".popup__image");
@@ -49,8 +54,11 @@ let autor = {
 
 profileEditBtn.addEventListener("click", handleClickEdit);
 cardAddBtn.addEventListener("click", handleClickAddCard);
+profileAvatar.addEventListener("click", handleChangeAvatar);
 profileEditForm.addEventListener("submit", handleEditFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
+avatarForm.addEventListener("submit", handleNewAvatar);
+
 
 Array.from(closeBtns).forEach((btn) =>
   btn.addEventListener("click", () => closeModal(btn.closest(".popup")))
@@ -70,6 +78,16 @@ function handleEditFormSubmit(evt) {
     profileInputDesc.textContent = data.about;
     closeModal(popupEdit);
   });
+}
+
+function handleNewAvatar(evt) {
+  evt.preventDefault();
+  editAvatar(avatarInputLink.value)
+    .then((data) => {
+      profileAvatar.style.backgroundImage = `url(${data.avatar})`;
+    });
+  evt.target.reset();
+  closeModal(popupAvatar);
 }
 
 function handleClickAddCard() {
@@ -132,6 +150,10 @@ function handleDeleteCard(evt, cardId) {
   item.remove();
 }
 
+function handleChangeAvatar() {
+  openModal(popupAvatar);
+}
+
 const renderCards = (cards) => {
   cards.forEach((item) => {
     const cardElement = createCard(
@@ -144,15 +166,6 @@ const renderCards = (cards) => {
     placesList.append(cardElement);
   });
 };
-
-function loadImage(imageUrl) {
-  return new Promise((resolve, reject) => {
-    const image = document.createElement("img");
-    image.src = imageUrl;
-    image.onerror = reject;
-    image.onload = resolve;
-  });
-}
 
 Array.from(popups).forEach((popup) => popup.classList.add("popup_is-animated"));
 
